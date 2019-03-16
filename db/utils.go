@@ -22,22 +22,17 @@ func (d *Database) Set(bits []string) {
 
 // Get the value for the provided key
 func (d *Database) Get(key string) string {
-	if val, ok := d.vals[key]; ok {
-		return val
-	}
-
-	t := d.next
-
+	t := d
 	for {
-		if t == nil {
+		if t.next == nil {
 			break
 		}
 
-		if val, ok := t.vals[key]; ok {
-			return val
-		}
-
 		t = t.next
+	}
+
+	if val, ok := t.vals[key]; ok {
+		return val
 	}
 
 	return "NULL"
@@ -45,8 +40,13 @@ func (d *Database) Get(key string) string {
 
 // Count returns the number of instances of the given value
 func (d *Database) Count(val string) int {
+	t := d
+	if t.next != nil {
+		t = t.next
+	}
+
 	var count int
-	for _, v := range d.vals {
+	for _, v := range t.vals {
 		if v == val {
 			count++
 		}
@@ -75,18 +75,12 @@ func (d *Database) Commit() {
 		t = t.next
 	}
 
-	var count int
 	for {
-		count++
-		fmt.Printf("DEBUG -- %d. t: %+v, d: %+v\n", count, t, d)
-
 		for k, v := range t.vals {
-			fmt.Printf("DEBUG -- updating %s, %s\n", k, v)
 			d.vals[k] = v
 		}
 
 		if t.prev == nil {
-			fmt.Printf("breaking after %d runs...\n", count)
 			break
 		}
 

@@ -70,6 +70,7 @@ func (d *Database) run() error {
 
 			fmt.Printf("%d\n", d.Count(bits[1]))
 		case "END":
+			d.Print()
 			return nil
 		case "ROLLBACK":
 			if d.next == nil {
