@@ -4,7 +4,7 @@ import "fmt"
 
 // Database is the stack implementation of our set of databases
 type Database struct {
-	root *Database
+	prev *Database
 	next *Database
 
 	vals map[string]string
@@ -12,7 +12,12 @@ type Database struct {
 
 // Set pushes the elements to the values map
 func (d *Database) Set(bits []string) {
-	d.vals[bits[1]] = bits[2]
+	t := d
+	if d.next != nil {
+		t = d.next
+	}
+
+	t.vals[bits[1]] = bits[2]
 }
 
 // Get the value for the provided key
@@ -20,6 +25,21 @@ func (d *Database) Get(key string) string {
 	if val, ok := d.vals[key]; ok {
 		return val
 	}
+
+	t := d.next
+
+	for {
+		if t == nil {
+			break
+		}
+
+		if val, ok := t.vals[key]; ok {
+			return val
+		}
+
+		t = t.next
+	}
+
 	return "NULL"
 }
 
@@ -39,6 +59,41 @@ func (d *Database) Delete(key string) {
 	if _, ok := d.vals[key]; ok {
 		delete(d.vals, key)
 	}
+}
+
+// Commit the open transactions
+func (d *Database) Commit() {
+	if d.next == nil {
+		return
+	}
+
+	t := d.next
+	for {
+		if t.next == nil {
+			break
+		}
+		t = t.next
+	}
+
+	var count int
+	for {
+		count++
+		fmt.Printf("DEBUG -- %d. t: %+v, d: %+v\n", count, t, d)
+
+		for k, v := range t.vals {
+			fmt.Printf("DEBUG -- updating %s, %s\n", k, v)
+			d.vals[k] = v
+		}
+
+		if t.prev == nil {
+			fmt.Printf("breaking after %d runs...\n", count)
+			break
+		}
+
+		t = t.prev
+	}
+
+	d.next = nil
 }
 
 // Print out the elements of the database

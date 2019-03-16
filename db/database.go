@@ -9,7 +9,7 @@ import (
 
 // NewDatabase returns a new instance of our Database
 func NewDatabase() *Database {
-	return &Database{vals: make(map[string]string)}
+	return &Database{}
 }
 
 // Run will actually kick off our database
@@ -27,13 +27,20 @@ func (d *Database) run() error {
 
 	scanner := bufio.NewScanner(os.Stdin)
 
+	d.vals = make(map[string]string)
+
 	fmt.Printf(">> ")
 	for scanner.Scan() {
 		bits = strings.Split(scanner.Text(), " ")
 
 		switch strings.ToUpper(bits[0]) {
 		case "BEGIN":
-			fmt.Printf("caught a begin: %s\n", bits)
+			t := d.next
+			d.next = &Database{vals: make(map[string]string), next: t, prev: d}
+
+			if t != nil {
+				t.prev = d.next
+			}
 		case "SET":
 			if len(bits) != 3 {
 				errorMsg(bits, 3)
@@ -65,9 +72,13 @@ func (d *Database) run() error {
 		case "END":
 			return nil
 		case "ROLLBACK":
-			fmt.Printf("caught a rollback: %s\n", bits)
+			if d.next == nil {
+				fmt.Printf("TRANSACTION NOT FOUND\n")
+				break
+			}
+			d.next = d.next.next
 		case "COMMIT":
-			fmt.Printf("caught a commit: %s\n", bits)
+			d.Commit()
 		case "":
 		default:
 			fmt.Printf("received unrecognized instruction: %s\n", strings.Join(bits, " "))

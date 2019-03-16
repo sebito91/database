@@ -6,10 +6,14 @@ import (
 	"github.com/sebito91/database/db"
 )
 
-func main() {
-	d := db.NewDatabase()
+var root *db.Database
 
-	if err := d.Run(); err != nil {
+func init() {
+	root = db.NewDatabase()
+}
+
+func main() {
+	if err := root.Run(); err != nil {
 		log.Fatal(err)
 	}
 }
