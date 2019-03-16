@@ -39,6 +39,7 @@ func (d *Database) run() error {
 				errorMsg(bits, 3)
 				break
 			}
+
 			d.Set(bits)
 		case "GET":
 			if len(bits) != 2 {
@@ -59,9 +60,9 @@ func (d *Database) run() error {
 				errorMsg(bits, 2)
 				break
 			}
+
 			fmt.Printf("%d\n", d.Count(bits[1]))
 		case "END":
-			fmt.Printf("caught the end: %s\n", bits)
 			return nil
 		case "ROLLBACK":
 			fmt.Printf("caught a rollback: %s\n", bits)
