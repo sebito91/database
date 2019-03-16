@@ -29,9 +29,12 @@ func (d *Database) Get(key string) string {
 		}
 
 		t = t.next
+		if val, ok := t.vals[key]; ok {
+			return val
+		}
 	}
 
-	if val, ok := t.vals[key]; ok {
+	if val, ok := d.vals[key]; ok {
 		return val
 	}
 
@@ -56,8 +59,13 @@ func (d *Database) Count(val string) int {
 
 // Delete removes the provided key fromo the database
 func (d *Database) Delete(key string) {
-	if _, ok := d.vals[key]; ok {
-		delete(d.vals, key)
+	t := d
+	if d.next != nil {
+		t = d.next
+	}
+
+	if _, ok := t.vals[key]; ok {
+		delete(t.vals, key)
 	}
 }
 
