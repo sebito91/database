@@ -2,6 +2,8 @@ package main
 
 import (
 	"log"
+
+	database "github.com/sebito91/database/db"
 )
 
 func main() {

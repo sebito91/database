@@ -1,4 +1,4 @@
-package databas
+package db
 
 import (
 	"bufio"
