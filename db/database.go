@@ -9,14 +9,17 @@ import (
 
 // NewDatabase returns a new instance of our Database
 func NewDatabase() *Database {
-	return &Database{
-		root: &DBValues{make(map[string]string)},
-	}
+	return &Database{vals: make(map[string]string)}
 }
 
 // Run will actually kick off our database
 func (d *Database) Run() error {
 	return d.run()
+}
+
+// errorMsg is just a func for us to reduce repetition
+func errorMsg(bits []string, exp int) {
+	fmt.Printf("incorrect number of arguments for %s, expected %d, got %d: %s\n", strings.ToUpper(bits[0]), exp, len(bits), strings.Join(bits, " "))
 }
 
 func (d *Database) run() error {
@@ -32,18 +35,31 @@ func (d *Database) run() error {
 		case "BEGIN":
 			fmt.Printf("caught a begin: %s\n", bits)
 		case "SET":
-			fmt.Printf("caught a set: %s\n", bits)
 			if len(bits) != 3 {
-				fmt.Printf("incorrect number of arguments for set, expected 3, got %d: %s", len(bits), bits)
+				errorMsg(bits, 3)
 				break
 			}
-			d.Add(bits)
+			d.Set(bits)
 		case "GET":
-			fmt.Printf("caught a get: %s\n", bits)
+			if len(bits) != 2 {
+				errorMsg(bits, 2)
+				break
+			}
+
+			fmt.Printf("%s\n", d.Get(bits[1]))
 		case "DELETE":
-			fmt.Printf("caught a delete: %s\n", bits)
+			if len(bits) != 2 {
+				errorMsg(bits, 2)
+				break
+			}
+
+			d.Delete(bits[1])
 		case "COUNT":
-			fmt.Printf("caught a count: %s\n", bits)
+			if len(bits) != 2 {
+				errorMsg(bits, 2)
+				break
+			}
+			fmt.Printf("%d\n", d.Count(bits[1]))
 		case "END":
 			fmt.Printf("caught the end: %s\n", bits)
 			return nil
@@ -56,7 +72,7 @@ func (d *Database) run() error {
 			fmt.Printf("received unrecognized instruction: %s\n", strings.Join(bits, " "))
 		}
 
-		d.Print()
+		//		d.Print()
 		fmt.Printf(">> ")
 	}
 

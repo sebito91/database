@@ -3,13 +3,13 @@ package main
 import (
 	"log"
 
-	database "github.com/sebito91/database/db"
+	"github.com/sebito91/database/db"
 )
 
 func main() {
-	db := database.NewDatabase()
+	d := db.NewDatabase()
 
-	if err := db.Run(); err != nil {
+	if err := d.Run(); err != nil {
 		log.Fatal(err)
 	}
 }
